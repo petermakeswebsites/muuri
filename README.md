@@ -2,6 +2,8 @@
   <a id="muuri" href="#muuri" aria-hidden="true"><img src="https://muuri.dev/muuri-logo.svg" alt="Muuri" width="400" /></a>
 </h1>
 
+> **Note:** This is a fork of Muuri published as `@petermakeswebsites/muuri`. It adds a new `useTransform` option that allows positioning items using CSS `left`/`top` properties instead of CSS transforms. This is useful for compatibility with [CSS anchor positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning), which doesn't work well with transformed elements. Set `useTransform: false` to enable this mode.
+
 Muuri is a JavaScript layout engine that allows you to build all kinds of layouts (no kidding!) and make them responsive, sortable, filterable, draggable and/or animated. Comparing to what's out there Muuri is a combination of [Packery](http://packery.metafizzy.co/), [Masonry](http://masonry.desandro.com/), [Isotope](http://isotope.metafizzy.co/) and [Sortable](https://github.com/RubaXa/Sortable). Wanna see it in action? Check out the [demo](https://muuri.dev/) on the website.
 
 **Features**

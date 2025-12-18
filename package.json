@@ -1,6 +1,6 @@
 {
-  "name": "muuri",
-  "version": "0.9.5",
+  "name": "@petermakeswebsites/muuri",
+  "version": "0.9.7",
   "description": "Responsive, sortable, filterable and draggable layouts",
   "keywords": [
     "grid",
