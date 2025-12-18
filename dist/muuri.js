@@ -2663,6 +2663,22 @@
     return result;
   }
 
+  var positionValue = {};
+
+  /**
+   * Returns the element's computed left and top values as floats.
+   * The returned object is always the same object and updated every time this
+   * function is called.
+   *
+   * @param {HTMLElement} element
+   * @returns {Object}
+   */
+  function getPositionStyle(element) {
+    positionValue.x = getStyleAsFloat(element, 'left') || 0;
+    positionValue.y = getStyleAsFloat(element, 'top') || 0;
+    return positionValue;
+  }
+
   var translateValue = {};
   var transformNone = 'none';
   var rxMat3d = /^matrix3d/;
@@ -2671,14 +2687,21 @@
   var rxNextItem = /[^,]*,/;
 
   /**
-   * Returns the element's computed translateX and translateY values as a floats.
+   * Returns the element's computed translateX and translateY values as floats.
+   * When useTransform is false, returns the left/top CSS property values instead.
    * The returned object is always the same object and updated every time this
    * function is called.
    *
    * @param {HTMLElement} element
+   * @param {Boolean} [useTransform=true]
    * @returns {Object}
    */
-  function getTranslate(element) {
+  function getTranslate(element, useTransform) {
+    // If useTransform is explicitly false, read from left/top instead
+    if (useTransform === false) {
+      return getPositionStyle(element);
+    }
+
     translateValue.x = 0;
     translateValue.y = 0;
 
@@ -3736,7 +3759,8 @@
     if (targetContainer !== currentContainer) {
       targetContainer.appendChild(element);
       offsetDiff = getOffsetDiff(currentContainer, targetContainer, true);
-      translate = getTranslate(element);
+      var useTransform = targetSettings.useTransform !== false;
+      translate = getTranslate(element, useTransform);
       translate.x -= offsetDiff.left;
       translate.y -= offsetDiff.top;
     }
@@ -3858,7 +3882,8 @@
     var gridContainer = grid._element;
     var dragContainer = settings.dragContainer || gridContainer;
     var containingBlock = getContainingBlock(dragContainer);
-    var translate = getTranslate(element);
+    var useTransform = settings.useTransform !== false;
+    var translate = getTranslate(element, useTransform);
     var elementRect = element.getBoundingClientRect();
     var hasDragContainer = dragContainer !== gridContainer;
 
@@ -4999,7 +5024,8 @@
 
     if (element.parentNode !== container) {
       if (left === undefined || top === undefined) {
-        var translate = getTranslate(element);
+        var useTransform = item.getGrid()._settings.useTransform !== false;
+        var translate = getTranslate(element, useTransform);
         left = translate.x - this._containerDiffX;
         top = translate.y - this._containerDiffY;
       }
@@ -5170,7 +5196,8 @@
     // Stop animation.
     if (this._animation.isAnimating()) {
       if (left === undefined || top === undefined) {
-        var translate = getTranslate(item._element);
+        var useTransform = item.getGrid()._settings.useTransform !== false;
+        var translate = getTranslate(item._element, useTransform);
         left = translate.x;
         top = translate.y;
       }
@@ -5286,7 +5313,8 @@
   ItemLayout.prototype._setupAnimation = function () {
     var item = this._item;
     if (item._tX === undefined || item._tY === undefined) {
-      var translate = getTranslate(item._element);
+      var useTransform = item.getGrid()._settings.useTransform !== false;
+      var translate = getTranslate(item._element, useTransform);
       item._tX = translate.x;
       item._tY = translate.y;
     }
@@ -5325,8 +5353,16 @@
     }
 
     // Get current/next styles for animation.
-    this._currentStyles[transformProp] = getTranslateString(item._tX, item._tY);
-    this._targetStyles[transformProp] = getTranslateString(this._nextLeft, this._nextTop);
+    var useTransform = settings.useTransform !== false;
+    if (useTransform) {
+      this._currentStyles[transformProp] = getTranslateString(item._tX, item._tY);
+      this._targetStyles[transformProp] = getTranslateString(this._nextLeft, this._nextTop);
+    } else {
+      this._currentStyles.left = item._tX + 'px';
+      this._currentStyles.top = item._tY + 'px';
+      this._targetStyles.left = this._nextLeft + 'px';
+      this._targetStyles.top = this._nextTop + 'px';
+    }
 
     // Set internal translation values to undefined for the duration of the
     // animation since they will be changing on each animation frame for the
@@ -5391,6 +5427,7 @@
     var translateY;
     var currentVisClass;
     var nextVisClass;
+    var useTransform;
 
     // Get target index.
     if (typeof position === 'number') {
@@ -5403,7 +5440,8 @@
 
     // Get current translateX and translateY values if needed.
     if (item.isPositioning() || this._isActive || item.isReleasing()) {
-      translate = getTranslate(element);
+      useTransform = grid._settings.useTransform !== false;
+      translate = getTranslate(element, useTransform);
       translateX = translate.x;
       translateY = translate.y;
     }
@@ -5485,7 +5523,8 @@
         targetContainer.appendChild(element);
         offsetDiff = getOffsetDiff(targetContainer, currentContainer, true);
         if (!translate) {
-          translate = getTranslate(element);
+          useTransform = targetGrid._settings.useTransform !== false;
+          translate = getTranslate(element, useTransform);
           translateX = translate.x;
           translateY = translate.y;
         }
@@ -5576,7 +5615,8 @@
     if (this._container !== gridElement) {
       if (left === undefined || top === undefined) {
         if (abort) {
-          translate = getTranslate(element);
+          var useTransform = grid._settings.useTransform !== false;
+          translate = getTranslate(element, useTransform);
           left = translate.x - this._containerDiffX;
           top = translate.y - this._containerDiffY;
         } else {
@@ -6263,11 +6303,13 @@
   };
 
   /**
-   * Set the provided left and top arguments as the item element's translate
-   * values in the DOM. This method keeps track of the currently applied
-   * translate values and skips the update operation if the provided values are
-   * identical to the currently applied values. Returns `false` if there was no
-   * need for update and `true` if the translate value was updated.
+   * Set the provided left and top arguments as the item element's position
+   * values in the DOM. Depending on the grid's useTransform setting, this will
+   * either use CSS transform (translateX/Y) or CSS left/top properties.
+   * This method keeps track of the currently applied values and skips the update
+   * operation if the provided values are identical to the currently applied
+   * values. Returns `false` if there was no need for update and `true` if the
+   * position value was updated.
    *
    * @private
    * @param {Number} left
@@ -6278,7 +6320,17 @@
     if (this._tX === left && this._tY === top) return false;
     this._tX = left;
     this._tY = top;
-    this._element.style[transformProp] = getTranslateString(left, top);
+
+    var grid = this.getGrid();
+    var useTransform = grid && grid._settings.useTransform !== false;
+
+    if (useTransform) {
+      this._element.style[transformProp] = getTranslateString(left, top);
+    } else {
+      this._element.style.left = left + 'px';
+      this._element.style.top = top + 'px';
+    }
+
     return true;
   };
 
@@ -7304,6 +7356,7 @@
    * @param {Boolean} [options.layoutOnInit=true]
    * @param {Number} [options.layoutDuration=300]
    * @param {String} [options.layoutEasing="ease"]
+   * @param {Boolean} [options.useTransform=true]
    * @param {?Object} [options.sortData=null]
    * @param {Boolean} [options.dragEnabled=false]
    * @param {?String} [options.dragHandle=null]
@@ -7546,6 +7599,9 @@
     layoutOnInit: true,
     layoutDuration: 300,
     layoutEasing: 'ease',
+
+    // Positioning
+    useTransform: true,
 
     // Sorting
     sortData: null,

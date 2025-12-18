@@ -144,7 +144,8 @@ ItemLayout.prototype.stop = function (processCallbackQueue, left, top) {
   // Stop animation.
   if (this._animation.isAnimating()) {
     if (left === undefined || top === undefined) {
-      var translate = getTranslate(item._element);
+      var useTransform = item.getGrid()._settings.useTransform !== false;
+      var translate = getTranslate(item._element, useTransform);
       left = translate.x;
       top = translate.y;
     }
@@ -260,7 +261,8 @@ ItemLayout.prototype._finish = function () {
 ItemLayout.prototype._setupAnimation = function () {
   var item = this._item;
   if (item._tX === undefined || item._tY === undefined) {
-    var translate = getTranslate(item._element);
+    var useTransform = item.getGrid()._settings.useTransform !== false;
+    var translate = getTranslate(item._element, useTransform);
     item._tX = translate.x;
     item._tY = translate.y;
   }
@@ -299,8 +301,16 @@ ItemLayout.prototype._startAnimation = function () {
   }
 
   // Get current/next styles for animation.
-  this._currentStyles[transformProp] = getTranslateString(item._tX, item._tY);
-  this._targetStyles[transformProp] = getTranslateString(this._nextLeft, this._nextTop);
+  var useTransform = settings.useTransform !== false;
+  if (useTransform) {
+    this._currentStyles[transformProp] = getTranslateString(item._tX, item._tY);
+    this._targetStyles[transformProp] = getTranslateString(this._nextLeft, this._nextTop);
+  } else {
+    this._currentStyles.left = item._tX + 'px';
+    this._currentStyles.top = item._tY + 'px';
+    this._targetStyles.left = this._nextLeft + 'px';
+    this._targetStyles.top = this._nextTop + 'px';
+  }
 
   // Set internal translation values to undefined for the duration of the
   // animation since they will be changing on each animation frame for the

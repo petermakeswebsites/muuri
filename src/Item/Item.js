@@ -360,11 +360,13 @@ Item.prototype._canSkipLayout = function (left, top) {
 };
 
 /**
- * Set the provided left and top arguments as the item element's translate
- * values in the DOM. This method keeps track of the currently applied
- * translate values and skips the update operation if the provided values are
- * identical to the currently applied values. Returns `false` if there was no
- * need for update and `true` if the translate value was updated.
+ * Set the provided left and top arguments as the item element's position
+ * values in the DOM. Depending on the grid's useTransform setting, this will
+ * either use CSS transform (translateX/Y) or CSS left/top properties.
+ * This method keeps track of the currently applied values and skips the update
+ * operation if the provided values are identical to the currently applied
+ * values. Returns `false` if there was no need for update and `true` if the
+ * position value was updated.
  *
  * @private
  * @param {Number} left
@@ -375,7 +377,17 @@ Item.prototype._setTranslate = function (left, top) {
   if (this._tX === left && this._tY === top) return false;
   this._tX = left;
   this._tY = top;
-  this._element.style[transformProp] = getTranslateString(left, top);
+
+  var grid = this.getGrid();
+  var useTransform = grid && grid._settings.useTransform !== false;
+
+  if (useTransform) {
+    this._element.style[transformProp] = getTranslateString(left, top);
+  } else {
+    this._element.style.left = left + 'px';
+    this._element.style.top = top + 'px';
+  }
+
   return true;
 };
 

@@ -68,6 +68,7 @@ ItemMigrate.prototype.start = function (targetGrid, position, container) {
   var translateY;
   var currentVisClass;
   var nextVisClass;
+  var useTransform;
 
   // Get target index.
   if (typeof position === 'number') {
@@ -80,7 +81,8 @@ ItemMigrate.prototype.start = function (targetGrid, position, container) {
 
   // Get current translateX and translateY values if needed.
   if (item.isPositioning() || this._isActive || item.isReleasing()) {
-    translate = getTranslate(element);
+    useTransform = grid._settings.useTransform !== false;
+    translate = getTranslate(element, useTransform);
     translateX = translate.x;
     translateY = translate.y;
   }
@@ -162,7 +164,8 @@ ItemMigrate.prototype.start = function (targetGrid, position, container) {
       targetContainer.appendChild(element);
       offsetDiff = getOffsetDiff(targetContainer, currentContainer, true);
       if (!translate) {
-        translate = getTranslate(element);
+        useTransform = targetGrid._settings.useTransform !== false;
+        translate = getTranslate(element, useTransform);
         translateX = translate.x;
         translateY = translate.y;
       }
@@ -253,7 +256,8 @@ ItemMigrate.prototype.stop = function (abort, left, top) {
   if (this._container !== gridElement) {
     if (left === undefined || top === undefined) {
       if (abort) {
-        translate = getTranslate(element);
+        var useTransform = grid._settings.useTransform !== false;
+        translate = getTranslate(element, useTransform);
         left = translate.x - this._containerDiffX;
         top = translate.y - this._containerDiffY;
       } else {

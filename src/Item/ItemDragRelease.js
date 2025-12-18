@@ -131,7 +131,8 @@ ItemDragRelease.prototype._placeToGrid = function (left, top) {
 
   if (element.parentNode !== container) {
     if (left === undefined || top === undefined) {
-      var translate = getTranslate(element);
+      var useTransform = item.getGrid()._settings.useTransform !== false;
+      var translate = getTranslate(element, useTransform);
       left = translate.x - this._containerDiffX;
       top = translate.y - this._containerDiffY;
     }

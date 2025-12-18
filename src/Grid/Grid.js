@@ -85,6 +85,7 @@ var layoutId = 0;
  * @param {Boolean} [options.layoutOnInit=true]
  * @param {Number} [options.layoutDuration=300]
  * @param {String} [options.layoutEasing="ease"]
+ * @param {Boolean} [options.useTransform=true]
  * @param {?Object} [options.sortData=null]
  * @param {Boolean} [options.dragEnabled=false]
  * @param {?String} [options.dragHandle=null]
@@ -327,6 +328,9 @@ Grid.defaultOptions = {
   layoutOnInit: true,
   layoutDuration: 300,
   layoutEasing: 'ease',
+
+  // Positioning
+  useTransform: true,
 
   // Sorting
   sortData: null,

@@ -281,6 +281,7 @@ export interface GridOptions {
   layoutOnInit?: boolean;
   layoutDuration?: number;
   layoutEasing?: string;
+  useTransform?: boolean;
   sortData?: { [key: string]: SortDataGetter } | null;
   dragEnabled?: boolean;
   dragHandle?: string | null;

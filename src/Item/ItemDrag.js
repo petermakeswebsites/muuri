@@ -1067,7 +1067,8 @@ ItemDrag.prototype._finishMigration = function () {
   if (targetContainer !== currentContainer) {
     targetContainer.appendChild(element);
     offsetDiff = getOffsetDiff(currentContainer, targetContainer, true);
-    translate = getTranslate(element);
+    var useTransform = targetSettings.useTransform !== false;
+    translate = getTranslate(element, useTransform);
     translate.x -= offsetDiff.left;
     translate.y -= offsetDiff.top;
   }
@@ -1189,7 +1190,8 @@ ItemDrag.prototype._prepareStart = function () {
   var gridContainer = grid._element;
   var dragContainer = settings.dragContainer || gridContainer;
   var containingBlock = getContainingBlock(dragContainer);
-  var translate = getTranslate(element);
+  var useTransform = settings.useTransform !== false;
+  var translate = getTranslate(element, useTransform);
   var elementRect = element.getBoundingClientRect();
   var hasDragContainer = dragContainer !== gridContainer;
 

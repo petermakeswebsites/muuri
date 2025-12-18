@@ -5,6 +5,7 @@
  */
 
 import getStyle from './getStyle';
+import getPositionStyle from './getPositionStyle';
 import transformStyle from './transformStyle';
 
 var translateValue = {};
@@ -15,14 +16,21 @@ var rxMat3dTx = /([^,]*,){12}/;
 var rxNextItem = /[^,]*,/;
 
 /**
- * Returns the element's computed translateX and translateY values as a floats.
+ * Returns the element's computed translateX and translateY values as floats.
+ * When useTransform is false, returns the left/top CSS property values instead.
  * The returned object is always the same object and updated every time this
  * function is called.
  *
  * @param {HTMLElement} element
+ * @param {Boolean} [useTransform=true]
  * @returns {Object}
  */
-export default function getTranslate(element) {
+export default function getTranslate(element, useTransform) {
+  // If useTransform is explicitly false, read from left/top instead
+  if (useTransform === false) {
+    return getPositionStyle(element);
+  }
+
   translateValue.x = 0;
   translateValue.y = 0;
 

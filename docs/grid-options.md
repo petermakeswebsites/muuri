@@ -351,6 +351,26 @@ var grid = new Muuri(elem, {
 });
 ```
 
+## useTransform
+
+Should items be positioned using CSS `transform` property or CSS `left`/`top` properties? When `true` (the default) Muuri uses `transform: translateX(...) translateY(...)` for positioning items, which provides optimal performance. When set to `false` Muuri uses CSS `left` and `top` properties instead.
+
+Setting this to `false` is useful when you need compatibility with CSS features that don't work well with CSS transforms, such as [CSS anchor positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning).
+
+**Note:** Using `left`/`top` positioning instead of transforms may result in slightly lower animation performance since these properties trigger layout recalculations while `transform` doesn't.
+
+- Default value: `true`.
+- Accepted types: boolean.
+
+**Examples**
+
+```javascript
+// Use left/top positioning instead of transform.
+var grid = new Muuri(elem, {
+  useTransform: false,
+});
+```
+
 ## sortData
 
 The sort data getter functions. Provide an object where the key is the name of the sortable attribute and the function returns a value (from the item) by which the items can be sorted.
